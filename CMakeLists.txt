@@ -1,0 +1,49 @@
+cmake_minimum_required(VERSION 3.11)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2")
+
+if (DEFINED ACGL_BUILD_STATIC)
+    set(CMAKE_BUILD_SHARED_LIBS OFF)
+    if (UNIX)
+        set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+        set(CMAKE_EXE_LINKER_FLAGS "-static")
+    endif (UNIX)
+endif ()
+
+project(acgl VERSION 0.1.1 DESCRIPTION "Another Custom GUI Library")
+find_package(SDL2 REQUIRED)
+
+if (DEFINED ACGL_BUILD_STATIC)
+    add_library(acgl STATIC
+      "src/gui.c"
+      "src/inputhandler.c"
+    )
+    if (MSVC)
+        target_compile_options(acgl PUBLIC/PRIVATE /MT)
+        target_compile_options(acgl PUBLIC/PRIVATE  /INCREMENTAL:NO /NODEFAULTLIB:MSVCRT)
+    endif (MSVC)
+else ()
+    add_library(acgl SHARED
+      "src/gui.c"
+      "src/inputhandler.c"
+    )
+endif()
+
+set_target_properties(acgl PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(acgl PROPERTIES SOVERSION 0)
+set_target_properties(acgl PROPERTIES PUBLIC_HEADER "include/acgl.h")
+
+target_include_directories(acgl PRIVATE include/acgl)
+target_link_libraries(acgl SDL2::Main)
+
+configure_file(acgl.pc.in acgl.pc @ONLY)
+include(GNUInstallDirs)
+install(TARGETS acgl
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  PUBLIC_HEADER
+)
+install(FILES ${CMAKE_BINARY_DIR}/acgl.pc
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
+)
+install(DIRECTORY include/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)

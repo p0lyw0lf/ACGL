@@ -1,0 +1,10 @@
+# No build files
+acgl.pc
+libacgl*
+Makefile
+install_manifest.txt
+
+# No CMake build files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake

@@ -12,10 +12,15 @@ endif ()
 project(acgl VERSION 0.1.1 DESCRIPTION "Another Custom GUI Library")
 find_package(SDL2 REQUIRED)
 
+set(SOURCE_FILES
+    "src/gui.c"
+    "src/gui_safety.c"
+    "src/inputhandler.c"
+)
+
 if (DEFINED ACGL_BUILD_STATIC)
     add_library(acgl STATIC
-      "src/gui.c"
-      "src/inputhandler.c"
+        ${SOURCE_FILES}
     )
     if (MSVC)
         target_compile_options(acgl PUBLIC/PRIVATE /MT)
@@ -23,8 +28,7 @@ if (DEFINED ACGL_BUILD_STATIC)
     endif (MSVC)
 else ()
     add_library(acgl SHARED
-      "src/gui.c"
-      "src/inputhandler.c"
+        ${SOURCE_FILES}
     )
 endif()
 

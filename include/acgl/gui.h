@@ -72,10 +72,6 @@ typedef struct {
 } ACGL_gui_t;
 
 
-// Internal functions to help check for valid objects
-bool __ACGL_is_gui_object_t(ACGL_gui_object_t* object);
-bool __ACGL_is_gui_t(ACGL_gui_t* gui);
-
 // Serves as an entrypoint to the render tree. Traverses if DFS-style.
 // The tree expects the background elements to be at the front of the linkedlist
 extern bool ACGL_gui_render(ACGL_gui_t* ACGL_gui); // returns: did render
@@ -92,5 +88,5 @@ extern void ACGL_gui_node_remove_all_children(ACGL_gui_object_t* parent);
 extern void ACGL_gui_node_destroy(ACGL_gui_object_t* node);
 
 extern bool ACGL_gui_blank_callback(SDL_Renderer* renderer, SDL_Rect location, void* data);
-
+extern bool ACGL_gui_force_update(ACGL_gui_t* gui);
 #endif //ACGL_GUI_H

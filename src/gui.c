@@ -1,51 +1,17 @@
 #include "gui.h"
-
-bool __ACGL_is_gui_t(ACGL_gui_t* gui) {
-    if (gui == NULL) {
-        fprintf(stderr, "Error! NULL ACGL_gui_t\n");
-        return false;
-    }
-
-    if (!__ACGL_is_gui_object_t(gui->root)) {
-        fprintf(stderr, "Error! NULL ACGL_gui_t->root\n");
-        return false;
-    }
-
-    if (gui->renderer == NULL) {
-        fprintf(stderr, "Error! NULL ACGL_gui_t->renderer\n");
-        return false;
-    }
-
-    return true;
-}
-
-bool __ACGL_is_gui_object_t(ACGL_gui_object_t* object) {
-    if (object == NULL) {
-        fprintf(stderr, "Error! NULL ACGL_gui_object_t\n");
-        return false;
-    }
-
-    // TODO: more checks
-    
-    return true;
-}
+#include "gui_safety.h"
+#include "contracts.h"
 
 bool ACGL_gui_force_update(ACGL_gui_t* gui) {
-    if (gui == NULL) {
-        fprintf(stderr, "Error! ACGL_gui_force_update was passed a NULL gui?\n");
-        return false;
-    }
-
-    if (gui->root == NULL) {
-        fprintf(stderr, "Error! ACGL_gui_force_update has a gui with a NULL root?\n");
-    }
+    REQUIRES(__ACGL_is_gui_t(gui));
+   
+    bool old_update = gui->root->needs_update;
+    gui->root->needs_update = true;
+    return !old_update;
 }
 
 bool ACGL_gui_render(ACGL_gui_t* gui) {
-  if (gui == NULL) {
-    fprintf(stderr, "Error! ACGL_gui_render was passed a NULL gui?\n");
-    return false;
-  }
+  REQUIRES(__ACGL_is_gui_t(gui));
 
   int w, h;
   SDL_GetRendererOutputSize(gui->renderer, &w, &h);
@@ -75,14 +41,13 @@ ACGL_gui_t* ACGL_gui_init(SDL_Renderer* renderer) {
     return NULL;
   }
 
+  ENSURES(__ACGL_is_gui_t(gui));
   return gui;
 }
 
 void ACGL_gui_destroy(ACGL_gui_t* gui) {
-  if (gui == NULL) {
-    fprintf(stderr, "ACGL_gui_destroy passed a NULL gui?\n");
-    return;
-  }
+  REQUIRES(__ACGL_is_gui_t(gui));
+
   ACGL_gui_node_destroy(gui->root);
   gui->root = NULL;
 
@@ -137,19 +102,12 @@ ACGL_gui_object_t* ACGL_gui_node_init(SDL_Renderer* renderer, ACGL_gui_callback_
   node->first_child = NULL;
   node->last_child = NULL;
 
+  ENSURES(__ACGL_is_gui_object_t(node));
   return node;
 }
 
 bool ACGL_gui_node_render(ACGL_gui_object_t* node, SDL_Rect location) {
-  if (node == NULL) {
-    fprintf(stderr, "Error! ACGL_gui_node_render called with NULL node\n");
-    return false;
-  }
-
-  if (SDL_LockMutex(node->mutex) != 0) {
-    fprintf(stderr, "Could not lock mutex in ACGL_gui_node_render! SDL_Error %s\n", SDL_GetError());
-    return false;
-  }
+  REQUIRES(__ACGL_is_gui_object_t(node));
 
   bool return_val = false;
 
@@ -321,16 +279,8 @@ __ACGL_gui_node_render_set_constant_size:
 }
 
 void ACGL_gui_node_add_child_front(ACGL_gui_object_t* parent, ACGL_gui_object_t* child) {
-  // this whole method has tons of places to lose pointers if an incorrect child is passed in
-  if (parent == NULL) {
-    fprintf(stderr, "Error! can't add child to NULL parent in ACGL_gui_node_add_child_front\n");
-    return;
-  }
-
-  if (child == NULL) {
-    fprintf(stderr, "Error! can't add NULL child to parent in ACGL_gui_node_add_child_front\n");
-    return;
-  }
+  REQUIRES(__ACGL_is_gui_object_t(parent));
+  REQUIRES(__ACGL_is_gui_object_t(child));
 
   if (SDL_LockMutex(parent->mutex) != 0) {
     fprintf(stderr, "Could not lock parent mutex in ACGL_gui_node_add_child_front! Things will definitely look wrong. SDL_Error %s\n", SDL_GetError());
@@ -368,19 +318,13 @@ void ACGL_gui_node_add_child_front(ACGL_gui_object_t* parent, ACGL_gui_object_t*
 
   SDL_UnlockMutex(child->mutex);
   SDL_UnlockMutex(parent->mutex);
+  ENSURES(__ACGL_is_gui_object_t(parent));
+  ENSURES(__ACGL_is_gui_object_t(child));
 }
 
 void ACGL_gui_node_add_child_back(ACGL_gui_object_t* parent, ACGL_gui_object_t* child) {
-  // this whole method has tons of places to lose pointers if an incorrect child is passed in
-  if (parent == NULL) {
-    fprintf(stderr, "Error! can't add child to NULL parent in ACGL_gui_node_add_child_back\n");
-    return;
-  }
-
-  if (child == NULL) {
-    fprintf(stderr, "Error! can't add NULL child to parent in ACGL_gui_node_add_child_back\n");
-    return;
-  }
+  REQUIRES(__ACGL_is_gui_object_t(parent));
+  REQUIRES(__ACGL_is_gui_object_t(child));
 
   if (SDL_LockMutex(parent->mutex) != 0) {
     fprintf(stderr, "Could not lock parent mutex in ACGL_gui_node_add_child_back! Things will definitely look wrong. SDL_Error %s\n", SDL_GetError());
@@ -418,19 +362,14 @@ void ACGL_gui_node_add_child_back(ACGL_gui_object_t* parent, ACGL_gui_object_t* 
 
   SDL_UnlockMutex(child->mutex);
   SDL_UnlockMutex(parent->mutex);
+  
+  ENSURES(__ACGL_is_gui_object_t(parent));
+  ENSURES(__ACGL_is_gui_object_t(child));
 }
 
 void ACGL_gui_node_remove_child(ACGL_gui_object_t* parent, ACGL_gui_object_t* child) {
-  // does nothing if child is not present
-  if (parent == NULL) {
-    fprintf(stderr, "Error! can't add child to NULL parent in ACGL_gui_node_remove_child\n");
-    return;
-  }
-
-  if (child == NULL) {
-    fprintf(stderr, "Error! can't add NULL child to parent in ACGL_gui_node_remove_child\n");
-    return;
-  }
+  REQUIRES(__ACGL_is_gui_object_t(parent));
+  REQUIRES(__ACGL_is_gui_object_t(child));
 
   if (SDL_LockMutex(parent->mutex) != 0) {
     fprintf(stderr, "Could not lock parent mutex in ACGL_gui_node_remove_child! Things will definitely look wrong. SDL_Error %s\n", SDL_GetError());
@@ -479,13 +418,11 @@ void ACGL_gui_node_remove_child(ACGL_gui_object_t* parent, ACGL_gui_object_t* ch
 
   SDL_UnlockMutex(child->mutex);
   SDL_UnlockMutex(parent->mutex);
+  ENSURES(__ACGL_is_gui_object_t(parent));
 }
 
 void ACGL_gui_node_remove_all_children(ACGL_gui_object_t* parent) {
-  if (parent == NULL) {
-    fprintf(stderr, "Error! cannot remove from NULL node in ACGL_gui_node_remove_all_children\n");
-    return;
-  }
+  REQUIRES(__ACGL_is_gui_object_t(parent));
 
   if (SDL_LockMutex(parent->mutex) != 0) {
     fprintf(stderr, "Could not lock parent mutex in ACGL_gui_node_remove_all_children! Things will definitely look wrong. SDL_Error %s\n", SDL_GetError());
@@ -505,13 +442,11 @@ void ACGL_gui_node_remove_all_children(ACGL_gui_object_t* parent) {
   parent->last_child = NULL;
 
   SDL_UnlockMutex(parent->mutex);
+  ENSURES(__ACGL_is_gui_object_t(parent));
 }
 
 void ACGL_gui_node_destroy(ACGL_gui_object_t* node) {
-  if (node == NULL) {
-    fprintf(stderr, "Error! cannot destroy NULL node in ACGL_gui_node_destroy\n");
-    return;
-  }
+  REQUIRES(__ACGL_is_gui_object_t(parent));
 
   ACGL_gui_node_remove_all_children(node);
   free(node);

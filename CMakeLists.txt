@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.11)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2")
 
+set(ACGL_BUILD_STATIC YES)
+
 if (DEFINED ACGL_BUILD_STATIC)
     set(CMAKE_BUILD_SHARED_LIBS OFF)
     if (UNIX)
@@ -22,10 +24,10 @@ if (DEFINED ACGL_BUILD_STATIC)
     add_library(acgl STATIC
         ${SOURCE_FILES}
     )
-    if (MSVC)
+    #[[ if (MSVC)
         target_compile_options(acgl PUBLIC/PRIVATE /MT)
         target_compile_options(acgl PUBLIC/PRIVATE  /INCREMENTAL:NO /NODEFAULTLIB:MSVCRT)
-    endif (MSVC)
+    endif (MSVC) ]]
 else ()
     add_library(acgl SHARED
         ${SOURCE_FILES}

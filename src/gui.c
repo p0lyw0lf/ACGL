@@ -2,6 +2,14 @@
 #include "gui_safety.h"
 #include "contracts.h"
 
+#define min(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a < _b ? _a : _b; })
+#define max(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
 bool ACGL_gui_force_update(ACGL_gui_t* gui) {
     REQUIRES(__ACGL_is_gui_t(gui));
    
@@ -115,16 +123,27 @@ bool ACGL_gui_node_render(ACGL_gui_object_t* node, SDL_Rect location) {
   SDL_Rect sublocation = location;
 
   if (node->node_type & ACGL_GUI_NODE_PRESERVE_ASPECT) {
+	int minw, maxw, minh, maxh;
+
+	if (node->min_w != ACGL_GUI_DIM_NONE) { minw = node->min_w; }
+	else { minw = 0; }
+	if (node->max_w != ACGL_GUI_DIM_NONE) { maxw = min(node->max_w, location.w); }
+	else { maxw = location.w; }
+	if (node->min_h != ACGL_GUI_DIM_NONE) { minh = node->min_h; }
+	else { minh = 0; }
+	if (node->max_h != ACGL_GUI_DIM_NONE) { maxh = min(node->max_h, location.h); }
+	else { maxh = location.h; }
+	
     if ( (node->node_type & ACGL_GUI_NODE_FILL_W) && !(node->node_type & ACGL_GUI_NODE_FILL_H) ) {
       // fill all the available space first
       sublocation.w = location.w;
 
       // cap off minimum and maximum
-      if (node->min_w != ACGL_GUI_DIM_NONE && sublocation.w < node->min_w) {
-        sublocation.w = node->min_w;
+      if (node->min_w != ACGL_GUI_DIM_NONE && sublocation.w < minw) {
+        sublocation.w = minw;
       }
-      if (node->max_w != ACGL_GUI_DIM_NONE && sublocation.w > node->max_w) {
-        sublocation.w = node->max_w;
+      if (node->max_w != ACGL_GUI_DIM_NONE && sublocation.w > maxw) {
+        sublocation.w = maxw;
       }
 
       // then set height from that
@@ -132,12 +151,12 @@ bool ACGL_gui_node_render(ACGL_gui_object_t* node, SDL_Rect location) {
 
       // then cap off minimum and maximum of other dimension
       bool capped = false;
-      if (node->min_h != ACGL_GUI_DIM_NONE && sublocation.h < node->min_h) {
-        sublocation.h = node->min_h;
+      if (node->min_h != ACGL_GUI_DIM_NONE && sublocation.h < minh) {
+        sublocation.h = minh;
         capped = true;
       }
-      if (node->max_h != ACGL_GUI_DIM_NONE && sublocation.h > node->max_h) {
-        sublocation.h = node->max_h;
+      if (node->max_h != ACGL_GUI_DIM_NONE && sublocation.h > maxh) {
+        sublocation.h = maxh;
         capped = true;
       }
 
@@ -147,28 +166,33 @@ bool ACGL_gui_node_render(ACGL_gui_object_t* node, SDL_Rect location) {
       }
 
     } else if ( !(node->node_type & ACGL_GUI_NODE_FILL_W) && (node->node_type & ACGL_GUI_NODE_FILL_H) ) {
-      // fill all the available space first
+	  fprintf(stderr, "here\n");
+	  // fill all the available space first
       sublocation.h = location.h;
 
+	  
+
       // cap off minimum and maximum
-      if (node->min_h != ACGL_GUI_DIM_NONE && sublocation.h < node->min_h) {
-        sublocation.h = node->min_h;
+      if (node->min_h != ACGL_GUI_DIM_NONE && sublocation.h < minh) {
+        sublocation.h = minh;
       }
-      if (node->max_h != ACGL_GUI_DIM_NONE && sublocation.h > node->max_h) {
-        sublocation.h = node->max_h;
+      if (node->max_h != ACGL_GUI_DIM_NONE && sublocation.h > maxh) {
+        sublocation.h = maxh;
       }
 
       // then set height from that
       sublocation.w = sublocation.h * node->w / node->h;
 
+	  printf("x: %d y: %d, w: %d h: %d\n", sublocation.x, sublocation.y, sublocation.w, sublocation.h);
+
       // then cap off minimum and maximum of other dimension
       bool capped = false;
-      if (node->min_w != ACGL_GUI_DIM_NONE && sublocation.w < node->min_w) {
-        sublocation.w = node->min_w;
+      if (node->min_w != ACGL_GUI_DIM_NONE && sublocation.w < minw) {
+        sublocation.w = minw;
         capped = true;
       }
-      if (node->max_w != ACGL_GUI_DIM_NONE && sublocation.w > node->max_w) {
-        sublocation.w = node->max_w;
+      if (node->max_w != ACGL_GUI_DIM_NONE && sublocation.w > maxw) {
+        sublocation.w = maxw;
         capped = true;
       }
 
@@ -176,6 +200,7 @@ bool ACGL_gui_node_render(ACGL_gui_object_t* node, SDL_Rect location) {
       if (capped) {
         sublocation.h = sublocation.w * node->h / node->w;
       }
+	  printf("x: %d y: %d, w: %d h: %d\n", sublocation.x, sublocation.y, sublocation.w, sublocation.h);
     } else {
       // yes I can't believe I'm using a goto either, but this prevents a lot of code duplication
       // no actually I'm too lazy to restructure these if statements lol.
@@ -231,7 +256,12 @@ __ACGL_gui_node_render_set_constant_size:
     }
   }
 
-  // if we aren't anchored to the right, move relative coordinates to the left.
+  // 3 possibilities:
+  // LEFT: shift right none
+  // CENTER: shift right 1/2
+  // RIGHT: shift right fully
+  // The following if statements, if you trace their logic and assume mutual exclusivity,
+  // do this correctly.
   if (!(node->anchor & ACGL_GUI_ANCHOR_RIGHT)) {
     sublocation.x += (location.w - sublocation.w) / 2;
   }
@@ -246,7 +276,7 @@ __ACGL_gui_node_render_set_constant_size:
     if (node->y_frac) {
       sublocation.y = location.y + node->y * location.h;
     } else {
-      sublocation.y = location.x + node->x;
+      sublocation.y = location.y + node->y;
     }
   }
 

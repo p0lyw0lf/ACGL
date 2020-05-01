@@ -83,9 +83,9 @@ void ACGL_ih_deinit_eventdata(ACGL_ih_eventdata_t* medata) {
 }
 
 void ACGL_ih_register_keyevent(ACGL_ih_eventdata_t* medata, Uint16 keytype, ACGL_ih_callback_t callback, void* data) {
-	if (keytype > medata->keyCallbacks_size) {
+	if (keytype >= medata->keyCallbacks_size) {
 		// unsigned, no need to check for below zero
-		fprintf(stderr, "Error! keytype %d is out-of-bounds for length %d keyCallbacks in ACGL_ih_register_keyevent\n");
+		fprintf(stderr, "Error! keytype %d is out-of-bounds for length %d keyCallbacks in ACGL_ih_register_keyevent\n", keytype, medata->keyCallbacks_size);
 		return;
 	}
 
@@ -109,9 +109,9 @@ void ACGL_ih_register_windowevent(ACGL_ih_eventdata_t* medata, ACGL_ih_callback_
 }
 
 void ACGL_ih_deregister_keyevent(ACGL_ih_eventdata_t* medata, Uint16 keytype, ACGL_ih_callback_t callback) {
-	if (keytype > medata->keyCallbacks_size) {
+	if (keytype >= medata->keyCallbacks_size) {
 		// unsigned, no need to check for below zero
-		fprintf(stderr, "Error! keytype %d is out-of-bounds for length %d keyCallbacks in ACGL_ih_deregister_keyevent\n");
+		fprintf(stderr, "Error! keytype %d is out-of-bounds for length %d keyCallbacks in ACGL_ih_deregister_keyevent\n", keytype, medata->keyCallbacks_size);
 		return;
 	}
 

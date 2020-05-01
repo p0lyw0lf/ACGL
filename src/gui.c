@@ -136,7 +136,7 @@ bool ACGL_gui_node_render(ACGL_gui_object_t* node, SDL_Rect location) {
         sublocation.h = node->min_h;
         capped = true;
       }
-      if (node->max_h != ACGL_GUI_DIM_NONE && sublocation.h < node->max_h) {
+      if (node->max_h != ACGL_GUI_DIM_NONE && sublocation.h > node->max_h) {
         sublocation.h = node->max_h;
         capped = true;
       }
@@ -167,7 +167,7 @@ bool ACGL_gui_node_render(ACGL_gui_object_t* node, SDL_Rect location) {
         sublocation.w = node->min_w;
         capped = true;
       }
-      if (node->max_w != ACGL_GUI_DIM_NONE && sublocation.w < node->max_w) {
+      if (node->max_w != ACGL_GUI_DIM_NONE && sublocation.w > node->max_w) {
         sublocation.w = node->max_w;
         capped = true;
       }
@@ -235,9 +235,9 @@ __ACGL_gui_node_render_set_constant_size:
   if (!(node->anchor & ACGL_GUI_ANCHOR_RIGHT)) {
     sublocation.x += (location.w - sublocation.w) / 2;
   }
-  // same with the left anchor
-  if (!(node->anchor & ACGL_GUI_ANCHOR_LEFT)) {
-    sublocation.x -= (location.w - sublocation.w) / 2;
+  // if we are anchored to the left, move left again
+  if (node->anchor & ACGL_GUI_ANCHOR_LEFT) {
+    sublocation.x += (location.w - sublocation.w) / 2;
   }
 
   if (node->node_type & ACGL_GUI_NODE_FILL_H) {
@@ -254,9 +254,9 @@ __ACGL_gui_node_render_set_constant_size:
   if (!(node->anchor & ACGL_GUI_ANCHOR_TOP)) {
     sublocation.y += (location.h - sublocation.h) / 2;
   }
-  // same with bottom, only up
-  if (!(node->anchor & ACGL_GUI_ANCHOR_BOTTOM)) {
-    sublocation.y -= (location.h - sublocation.h) / 2;
+  // if we are anchored to the bottom, move down again
+  if (node->anchor & ACGL_GUI_ANCHOR_BOTTOM) {
+    sublocation.y += (location.h - sublocation.h) / 2;
   }
 
   if (node->needs_update) {

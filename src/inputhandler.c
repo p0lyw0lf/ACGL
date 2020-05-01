@@ -3,7 +3,7 @@
 ACGL_ih_keybinds_t* ACGL_ih_init_keybinds(const SDL_Scancode keycodes[], const Uint16 keycodes_size) {
 	ACGL_ih_keybinds_t* keybinds = (ACGL_ih_keybinds_t*)malloc(sizeof(ACGL_ih_keybinds_t));
 	if (keybinds == NULL) {
-		fprintf(stderr, "Error! could not malloc keybinds inACGL_ih__init_keybinds\n");
+		fprintf(stderr, "Error! could not malloc keybinds in ACGL_ih__init_keybinds\n");
 		return NULL;
 	}
 
@@ -19,7 +19,7 @@ ACGL_ih_keybinds_t* ACGL_ih_init_keybinds(const SDL_Scancode keycodes[], const U
 ACGL_ih_eventdata_t* ACGL_ih_init_eventdata(const size_t keycodes_size) {
 	ACGL_ih_eventdata_t* medata = (ACGL_ih_eventdata_t*)malloc(sizeof(ACGL_ih_eventdata_t));
 	if (medata == NULL) {
-		fprintf(stderr, "Error! could not malloc eventdata inACGL_ih__init_eventdata\n");
+		fprintf(stderr, "Error! could not malloc eventdata in ACGL_ih__init_eventdata\n");
 		return NULL;
 	}
 

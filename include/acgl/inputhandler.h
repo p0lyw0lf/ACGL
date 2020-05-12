@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <assert.h>
 
-typedef int (*ACGL_ih_callback_t)(void*, SDL_Event);
+typedef int (*ACGL_ih_callback_t)(SDL_Event, void*);
 
 typedef struct {
   SDL_Scancode* keycodes;

@@ -24,7 +24,7 @@ this file currently does not exist.
 - [x] Re-bindable keys
 - [x] Callback-based event handling
 - [ ] Mouse move/click events
-- [ ] Easy worker thread support
+- [x] Easy worker thread support
 - [ ] Easy SDL initialization
 
 ## Rendering structure

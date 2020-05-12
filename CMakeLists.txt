@@ -6,12 +6,15 @@ set(SOURCE_FILES
     "src/gui.c"
     "src/gui_safety.c"
     "src/inputhandler.c"
+    "src/threads.c"
 )
 set(HEADER_FILES
+  "include/acgl/common.h"
   "include/acgl/contracts.h"
   "include/acgl/gui.h"
   "include/acgl/gui_safety.h"
   "include/acgl/inputhandler.h"
+  "include/acgl/threads.h"
 )
 
 add_library(acgl STATIC

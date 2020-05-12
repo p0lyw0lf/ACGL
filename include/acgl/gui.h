@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <assert.h>
+#include "common.h"
 
 typedef float ACGL_gui_pos_t;
 
@@ -37,7 +38,6 @@ static const ACGL_gui_pos_t ACGL_GUI_DIM_FILL = -2;
 
 typedef struct ACGL_gui_object ACGL_gui_object_t;
 typedef bool (*ACGL_render_callback_t)(SDL_Renderer*, SDL_Rect, void*);
-typedef void (*ACGL_destroy_callback_t)(void*);
 
 struct ACGL_gui_object {
   SDL_Renderer* renderer;

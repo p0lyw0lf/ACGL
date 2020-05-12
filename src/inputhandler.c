@@ -186,7 +186,7 @@ bool ACGL_ih_handle_keyevent(SDL_Event event, ACGL_ih_keybinds_t* keybinds, ACGL
 			ACGL_ih_callback_node_t* ptr = medata->keyCallbacks[i];
 
 			while (ptr != NULL) {
-				ptr->callback(ptr->data, event);
+				(*ptr->callback)(event, ptr->data);
 				ptr = ptr->next;
 				calledSomething = true;
 			}
@@ -200,7 +200,7 @@ bool ACGL_ih_handle_windowevent(SDL_Event event, ACGL_ih_eventdata_t* medata) {
 
 	ACGL_ih_callback_node_t* ptr = medata->windowCallbacks;
 	while (ptr != NULL) {
-		ptr->callback(ptr->data, event);
+		(*ptr->callback)(event, ptr->data);
 		ptr = ptr->next;
 		calledSomething = true;
 	}

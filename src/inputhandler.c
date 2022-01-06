@@ -1,6 +1,6 @@
 #include "inputhandler.h"
 
-ACGL_ih_keybinds_t* ACGL_ih_init_keybinds(const SDL_Scancode keycodes[], const Uint16 keycodes_size) {
+ACGL_ih_keybinds_t* ACGL_ih_init_keybinds(const SDL_Scancode keycodes[], const size_t keycodes_size) {
 	ACGL_ih_keybinds_t* keybinds = (ACGL_ih_keybinds_t*)malloc(sizeof(ACGL_ih_keybinds_t));
 	if (keybinds == NULL) {
 		fprintf(stderr, "Error! could not malloc keybinds in ACGL_ih__init_keybinds\n");
@@ -8,7 +8,7 @@ ACGL_ih_keybinds_t* ACGL_ih_init_keybinds(const SDL_Scancode keycodes[], const U
 	}
 
 	keybinds->keycodes = (SDL_Scancode*)malloc(keycodes_size * sizeof(SDL_Scancode));
-	for (Uint16 i=0; i<keycodes_size; ++i) {
+	for (size_t i=0; i<keycodes_size; ++i) {
 		keybinds->keycodes[i] = keycodes[i];
 	}
 	keybinds->keycodes_size = keycodes_size;
@@ -24,7 +24,7 @@ ACGL_ih_eventdata_t* ACGL_ih_init_eventdata(const size_t keycodes_size) {
 	}
 
 	medata->keyCallbacks = (ACGL_ih_callback_node_t**)malloc(sizeof(ACGL_ih_callback_node_t*)*keycodes_size);
-	for (Uint16 i=0; i<keycodes_size; ++i) {
+	for (size_t i=0; i<keycodes_size; ++i) {
 		medata->keyCallbacks[i] = NULL;
 	}
 	medata->keyCallbacks_size = keycodes_size;
@@ -85,7 +85,7 @@ void ACGL_ih_deinit_eventdata(ACGL_ih_eventdata_t* medata) {
 void ACGL_ih_register_keyevent(ACGL_ih_eventdata_t* medata, Uint16 keytype, ACGL_ih_callback_t callback, void* data) {
 	if (keytype >= medata->keyCallbacks_size) {
 		// unsigned, no need to check for below zero
-		fprintf(stderr, "Error! keytype %d is out-of-bounds for length %d keyCallbacks in ACGL_ih_register_keyevent\n", keytype, medata->keyCallbacks_size);
+		fprintf(stderr, "Error! keytype %d is out-of-bounds for length %llu keyCallbacks in ACGL_ih_register_keyevent\n", keytype, medata->keyCallbacks_size);
 		return;
 	}
 
@@ -111,7 +111,7 @@ void ACGL_ih_register_windowevent(ACGL_ih_eventdata_t* medata, ACGL_ih_callback_
 void ACGL_ih_deregister_keyevent(ACGL_ih_eventdata_t* medata, Uint16 keytype, ACGL_ih_callback_t callback) {
 	if (keytype >= medata->keyCallbacks_size) {
 		// unsigned, no need to check for below zero
-		fprintf(stderr, "Error! keytype %d is out-of-bounds for length %d keyCallbacks in ACGL_ih_deregister_keyevent\n", keytype, medata->keyCallbacks_size);
+		fprintf(stderr, "Error! keytype %d is out-of-bounds for length %llu keyCallbacks in ACGL_ih_deregister_keyevent\n", keytype, medata->keyCallbacks_size);
 		return;
 	}
 

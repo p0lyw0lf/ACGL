@@ -11,7 +11,7 @@ typedef int (*ACGL_ih_callback_t)(void*, SDL_Event);
 
 typedef struct {
   SDL_Scancode* keycodes;
-  Uint16 keycodes_size;
+  size_t keycodes_size;
 } ACGL_ih_keybinds_t;
 
 typedef struct ACGL_ih_callback_node_t ACGL_ih_callback_node_t;
@@ -24,11 +24,11 @@ struct ACGL_ih_callback_node_t {
 
 typedef struct {
   ACGL_ih_callback_node_t** keyCallbacks;
-  Uint16 keyCallbacks_size;
+  size_t keyCallbacks_size;
   ACGL_ih_callback_node_t* windowCallbacks;
 } ACGL_ih_eventdata_t;
 
-extern ACGL_ih_keybinds_t* ACGL_ih_init_keybinds(const SDL_Scancode keycodes[], const Uint16 keycodes_size);
+extern ACGL_ih_keybinds_t* ACGL_ih_init_keybinds(const SDL_Scancode keycodes[], const size_t keycodes_size);
 extern ACGL_ih_eventdata_t* ACGL_ih_init_eventdata(const size_t keycodes_size);
 extern void ACGL_ih_deinit_keybinds(ACGL_ih_keybinds_t* keybinds);
 extern void ACGL_ih_deinit_eventdata(ACGL_ih_eventdata_t* medata);

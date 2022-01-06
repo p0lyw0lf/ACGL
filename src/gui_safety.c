@@ -127,11 +127,6 @@ bool __ACGL_is_gui_object_t(ACGL_gui_object_t* object) {
         fprintf(stderr, "Error! NULL ACGL_gui_object_t->mutex\n");
         return false;
     }
-
-    if (object->callback == NULL) {
-        fprintf(stderr, "Error! NULL ACGL_gui_object_t->callback\n");
-        return false;
-    }
     
     if (object->renderer == NULL) {
         fprintf(stderr, "Error! NULL ACGL_gui_object_t->renderer\n");

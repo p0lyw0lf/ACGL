@@ -35,18 +35,20 @@ enum ACGL_GUI_NODE_TYPE {
 static const ACGL_gui_pos_t ACGL_GUI_DIM_NONE = -1;
 static const ACGL_gui_pos_t ACGL_GUI_DIM_FILL = -2;
 
-typedef struct ACGL_gui_object_t ACGL_gui_object_t;
-typedef bool (*ACGL_gui_callback_t)(SDL_Renderer*, SDL_Rect, void*);
-typedef void (*ACGL_gui_destroy_callback_t)(void*);
+typedef struct ACGL_gui_object ACGL_gui_object_t;
+typedef bool (*ACGL_render_callback_t)(SDL_Renderer*, SDL_Rect, void*);
+typedef void (*ACGL_destroy_callback_t)(void*);
 
-struct ACGL_gui_object_t {
+struct ACGL_gui_object {
   SDL_Renderer* renderer;
   SDL_mutex* mutex;
-  ACGL_gui_callback_t callback; // is called before any of the childrens'
+  ACGL_render_callback_t render_callback; // is called before any of the childrens'
+  ACGL_destroy_callback_t destroy_callback; // is called when node is being destroyed to free callback data
   void* callback_data;
-  bool needs_update; // set this flag (after locking the mutex) whenever you
-                     // want the node and all its children to redraw themselves.
-                     // if set on a child, DOES NOT update the parent.
+  bool needs_update; // set this flag (after locking the mutex) whenever 
+                     // you want the node and all its children to redraw 
+                     // themselves. if set on a child, DOES NOT update 
+                     // the parent.
 
   // change the following data points to change the node's drawing behavior
   int anchor;
@@ -67,10 +69,11 @@ struct ACGL_gui_object_t {
   ACGL_gui_object_t* last_child;
 };
 
-typedef struct {
+typedef struct ACGL_gui ACGL_gui_t;
+struct ACGL_gui {
   SDL_Renderer* renderer;
   ACGL_gui_object_t* root;
-} ACGL_gui_t;
+};
 
 
 // Serves as an entrypoint to the render tree. Traverses if DFS-style.
@@ -79,16 +82,17 @@ extern bool ACGL_gui_render(ACGL_gui_t* ACGL_gui); // returns: did render
 extern ACGL_gui_t* ACGL_gui_init(SDL_Renderer* renderer); // creates a new ACGL_gui_t
 extern void ACGL_gui_destroy(ACGL_gui_t* ACGL_gui); // destroys the ACGL_gui_t and the entire subtree
 
-// TODO: add data free callback to this init method + the node struct
-extern ACGL_gui_object_t* ACGL_gui_node_init(SDL_Renderer* renderer, ACGL_gui_callback_t callback, void* data);
+extern ACGL_gui_object_t* ACGL_gui_node_init(SDL_Renderer* renderer, ACGL_render_callback_t render, ACGL_destroy_callback_t destroy, void* data);
 extern bool ACGL_gui_node_render(ACGL_gui_object_t* node, SDL_Rect location); // returns: did render
 extern void ACGL_gui_node_add_child_front(ACGL_gui_object_t* parent, ACGL_gui_object_t* child);
 extern void ACGL_gui_node_add_child_back(ACGL_gui_object_t* parent, ACGL_gui_object_t* child);
 extern void ACGL_gui_node_remove_child(ACGL_gui_object_t* parent, ACGL_gui_object_t* child);
 extern void ACGL_gui_node_remove_all_children(ACGL_gui_object_t* parent);
-// removing a single child does not automatically destroy it, removing all children does
+// Destroy != remove. If you simply remove, then a refrence to that node will still be valid 
+// and it can be added into other rendering trees if you want. Destroying a node frees all 
+// memory associated with it and also destroys all its children
 extern void ACGL_gui_node_destroy(ACGL_gui_object_t* node);
+extern void ACGL_gui_node_destroy_all_children(ACGL_gui_object_t* node);
 
-extern bool ACGL_gui_blank_callback(SDL_Renderer* renderer, SDL_Rect location, void* data);
 extern bool ACGL_gui_force_update(ACGL_gui_t* gui);
 #endif //ACGL_GUI_H

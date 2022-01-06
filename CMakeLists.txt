@@ -1,15 +1,4 @@
 cmake_minimum_required(VERSION 3.7)
-
-#set(ACGL_BUILD_STATIC YES)
-
-if (DEFINED ACGL_BUILD_STATIC)
-    set(CMAKE_BUILD_SHARED_LIBS OFF)
-    if (UNIX)
-        set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-        set(CMAKE_EXE_LINKER_FLAGS "-static")
-    endif (UNIX)
-endif ()
-
 project(acgl VERSION 0.1.1 DESCRIPTION "Another Custom GUI Library")
 find_package(SDL2 CONFIG REQUIRED)
 
@@ -18,20 +7,16 @@ set(SOURCE_FILES
     "src/gui_safety.c"
     "src/inputhandler.c"
 )
+set(HEADER_FILES
+  "include/acgl/contracts.h"
+  "include/acgl/gui.h"
+  "include/acgl/gui_safety.h"
+  "include/acgl/inputhandler.h"
+)
 
-if (DEFINED ACGL_BUILD_STATIC)
-    add_library(acgl STATIC
-        ${SOURCE_FILES}
-    )
-    #[[ if (MSVC)
-        target_compile_options(acgl PUBLIC/PRIVATE /MT)
-        target_compile_options(acgl PUBLIC/PRIVATE  /INCREMENTAL:NO /NODEFAULTLIB:MSVCRT)
-    endif (MSVC) ]]
-else ()
-    add_library(acgl SHARED
-        ${SOURCE_FILES}
-    )
-endif()
+add_library(acgl STATIC
+    ${HEADER_FILES} ${SOURCE_FILES}
+)
 
 set_target_properties(acgl PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(acgl PROPERTIES SOVERSION 0)

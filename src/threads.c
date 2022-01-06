@@ -173,9 +173,8 @@ int ACGL_thread_mainloop(void* data) {
       fprintf(stderr, "Could not lock mutex in loop in ACGL_thread_mainloop! SDL_Error: %s", SDL_GetError());
       return 1;
     }
-    printf("locked mutex\n");
+
     if (!target->data->running) {
-      printf("trying to quit\n");
       // quit loop immediately
       unlocked_running = false;
       SDL_UnlockMutex(target->data->mutex);

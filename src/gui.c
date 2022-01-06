@@ -125,86 +125,85 @@ bool ACGL_gui_node_render(ACGL_gui_object_t* node, SDL_Rect location) {
 
   // compute rectangle that we are supposed to draw in
   SDL_Rect sublocation = location;
+  ACGL_gui_pos_t sblw, sblh;
+  sblw = (ACGL_gui_pos_t)sublocation.w;
+  sblh = (ACGL_gui_pos_t)sublocation.h;
 
   if (node->node_type & ACGL_GUI_NODE_PRESERVE_ASPECT) {
-	int minw, maxw, minh, maxh;
+    ACGL_gui_pos_t minw, maxw, minh, maxh;
 
-	if (node->min_w != ACGL_GUI_DIM_NONE) { minw = node->min_w; }
-	else { minw = 0; }
-	if (node->max_w != ACGL_GUI_DIM_NONE) { maxw = min(node->max_w, location.w); }
-	else { maxw = location.w; }
-	if (node->min_h != ACGL_GUI_DIM_NONE) { minh = node->min_h; }
-	else { minh = 0; }
-	if (node->max_h != ACGL_GUI_DIM_NONE) { maxh = min(node->max_h, location.h); }
-	else { maxh = location.h; }
+	  if (node->min_w != ACGL_GUI_DIM_NONE) { minw = node->min_w; }
+	  else { minw = 0; }
+	  if (node->max_w != ACGL_GUI_DIM_NONE) { maxw = min(node->max_w, location.w); }
+	  else { maxw = location.w; }
+	  if (node->min_h != ACGL_GUI_DIM_NONE) { minh = node->min_h; }
+	  else { minh = 0; }
+	  if (node->max_h != ACGL_GUI_DIM_NONE) { maxh = min(node->max_h, location.h); }
+	  else { maxh = location.h; }
 	
     if ( (node->node_type & ACGL_GUI_NODE_FILL_W) && !(node->node_type & ACGL_GUI_NODE_FILL_H) ) {
       // fill all the available space first
-      sublocation.w = location.w;
+      sblw = location.w;
 
       // cap off minimum and maximum
-      if (node->min_w != ACGL_GUI_DIM_NONE && sublocation.w < minw) {
-        sublocation.w = minw;
+      if (node->min_w != ACGL_GUI_DIM_NONE && sblw < minw) {
+        sblw = minw;
       }
-      if (node->max_w != ACGL_GUI_DIM_NONE && sublocation.w > maxw) {
-        sublocation.w = maxw;
+      if (node->max_w != ACGL_GUI_DIM_NONE && sblw > maxw) {
+        sblw = maxw;
       }
 
       // then set height from that
-      sublocation.h = sublocation.w * node->h / node->w;
+      sblh = sblw * node->h / node->w;
 
       // then cap off minimum and maximum of other dimension
       bool capped = false;
-      if (node->min_h != ACGL_GUI_DIM_NONE && sublocation.h < minh) {
-        sublocation.h = minh;
+      if (node->min_h != ACGL_GUI_DIM_NONE && sblh < minh) {
+        sblh = minh;
         capped = true;
       }
-      if (node->max_h != ACGL_GUI_DIM_NONE && sublocation.h > maxh) {
-        sublocation.h = maxh;
+      if (node->max_h != ACGL_GUI_DIM_NONE && sblh > maxh) {
+        sblh = maxh;
         capped = true;
       }
 
       // if we did cap, we need to re-set the fill to something maybe non-filled
       if (capped) {
-        sublocation.w = sublocation.h * node->w / node->h;
+        sblw = sblh * node->w / node->h;
       }
 
     } else if ( !(node->node_type & ACGL_GUI_NODE_FILL_W) && (node->node_type & ACGL_GUI_NODE_FILL_H) ) {
-	  fprintf(stderr, "here\n");
-	  // fill all the available space first
-      sublocation.h = location.h;
+	    // fill all the available space first
+      sblh = location.h;
 
 	  
 
       // cap off minimum and maximum
-      if (node->min_h != ACGL_GUI_DIM_NONE && sublocation.h < minh) {
-        sublocation.h = minh;
+      if (node->min_h != ACGL_GUI_DIM_NONE && sblh < minh) {
+        sblh = minh;
       }
-      if (node->max_h != ACGL_GUI_DIM_NONE && sublocation.h > maxh) {
-        sublocation.h = maxh;
+      if (node->max_h != ACGL_GUI_DIM_NONE && sblh > maxh) {
+        sblh = maxh;
       }
 
       // then set height from that
-      sublocation.w = sublocation.h * node->w / node->h;
-
-	  printf("x: %d y: %d, w: %d h: %d\n", sublocation.x, sublocation.y, sublocation.w, sublocation.h);
+      sblw = node->w * sblh / node->h;
 
       // then cap off minimum and maximum of other dimension
       bool capped = false;
-      if (node->min_w != ACGL_GUI_DIM_NONE && sublocation.w < minw) {
-        sublocation.w = minw;
+      if (node->min_w != ACGL_GUI_DIM_NONE && sblw < minw) {
+        sblw = minw;
         capped = true;
       }
-      if (node->max_w != ACGL_GUI_DIM_NONE && sublocation.w > maxw) {
-        sublocation.w = maxw;
+      if (node->max_w != ACGL_GUI_DIM_NONE && sblw > maxw) {
+        sblw = maxw;
         capped = true;
       }
 
       // if we did cap, we need to re-set the fill to something maybe non-filled
       if (capped) {
-        sublocation.h = sublocation.w * node->h / node->w;
+        sblh = sblw * node->h / node->w;
       }
-	  printf("x: %d y: %d, w: %d h: %d\n", sublocation.x, sublocation.y, sublocation.w, sublocation.h);
     } else {
       // yes I can't believe I'm using a goto either, but this prevents a lot of code duplication
       // no actually I'm too lazy to restructure these if statements lol.
@@ -215,48 +214,51 @@ __ACGL_gui_node_render_set_constant_size:
     // we can width and height independently!
     // first, get the baseline w and h
     if (node->node_type & ACGL_GUI_NODE_FILL_W) {
-      sublocation.w = location.w;
+      sblw = location.w;
     } else {
       if (node->w_frac) {
-        sublocation.w = node->w * location.w;
+        sblw = node->w * location.w;
       } else {
-        sublocation.w = node->w;
+        sblw = node->w;
       }
     }
     if (node->node_type & ACGL_GUI_NODE_FILL_H) {
-      sublocation.h = location.h;
+      sblh = location.h;
     } else {
       if (node->h_frac) {
-        sublocation.h = node->h * location.h;
+        sblh = node->h * location.h;
       } else {
-        sublocation.h = node->h;
+        sblh = node->h;
       }
     }
 
     // then cap off at mininum
-    if (node->min_w != ACGL_GUI_DIM_NONE && sublocation.w < node->min_w) {
-      sublocation.w = node->min_w;
+    if (node->min_w != ACGL_GUI_DIM_NONE && sblw < node->min_w) {
+      sblw = node->min_w;
     }
-    if (node->min_h != ACGL_GUI_DIM_NONE && sublocation.h < node->min_h) {
-      sublocation.h = node->min_h;
+    if (node->min_h != ACGL_GUI_DIM_NONE && sblh < node->min_h) {
+      sblh = node->min_h;
     }
     // same with maximum
-    if (node->max_w != ACGL_GUI_DIM_NONE && sublocation.w > node->max_w) {
-      sublocation.w = node->max_w;
+    if (node->max_w != ACGL_GUI_DIM_NONE && sblw > node->max_w) {
+      sblw = node->max_w;
     }
-    if (node->max_h != ACGL_GUI_DIM_NONE && sublocation.h < node->max_h) {
-      sublocation.h = node->max_h;
+    if (node->max_h != ACGL_GUI_DIM_NONE && sblh < node->max_h) {
+      sblh = node->max_h;
     }
   }
+
+  sublocation.w = (int)rint(sblw);
+  sublocation.h = (int)rint(sblh);
 
   // now we can set the position knowing exactly how wide we should be
   if (node->node_type & ACGL_GUI_NODE_FILL_W) {
     sublocation.x = location.x;
   } else {
     if (node->x_frac) {
-      sublocation.x = location.x + node->x * location.w;
+      sublocation.x = (int)rint((double)location.x + (double)node->x * location.w);
     } else {
-      sublocation.x = location.x + node->x;
+      sublocation.x = (int)rint((double)location.x + (double)node->x);
     }
   }
 
@@ -278,9 +280,9 @@ __ACGL_gui_node_render_set_constant_size:
     sublocation.y = location.y;
   } else {
     if (node->y_frac) {
-      sublocation.y = location.y + node->y * location.h;
+      sublocation.y = (int)rint((double)location.y + (double)node->y * location.h);
     } else {
-      sublocation.y = location.y + node->y;
+      sublocation.y = (int)rint((double)location.y + (double)node->y);
     }
   }
 
@@ -481,8 +483,22 @@ void ACGL_gui_node_remove_all_children(ACGL_gui_object_t* parent) {
 
 void ACGL_gui_node_destroy(ACGL_gui_object_t* node) {
   REQUIRES(__ACGL_is_gui_object_t(parent));
+  // REQUIRES: no thread contention
+  // can't quite enforce that explicitly b/c destroying mutex here :L
 
+  // Recursively free all children
   ACGL_gui_node_remove_all_children(node);
+  
+  // Then free data related to the node
+  if (node->mutex != NULL) {
+    SDL_DestroyMutex(node->mutex);
+    node->mutex = NULL;
+  }
+  if (node->callback_data != NULL) {
+    free(node->callback_data);
+    node->callback_data = NULL;
+  }
+  // node->renderer is shared, don't free it
   free(node);
   // make sure to set to NULL on the outside, don't want any dangling refrences
 }

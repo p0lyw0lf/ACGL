@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.7)
 
-set(ACGL_BUILD_STATIC YES)
+#set(ACGL_BUILD_STATIC YES)
 
 if (DEFINED ACGL_BUILD_STATIC)
     set(CMAKE_BUILD_SHARED_LIBS OFF)
@@ -38,7 +38,7 @@ set_target_properties(acgl PROPERTIES SOVERSION 0)
 set_target_properties(acgl PROPERTIES PUBLIC_HEADER "include/acgl.h")
 
 target_include_directories(acgl PRIVATE include/acgl)
-target_link_libraries(acgl PRIVATE SDL2::SDL2main SDL2::SDL2-static)
+target_link_libraries(acgl PRIVATE SDL2::SDL2main SDL2::SDL2)
 
 configure_file(acgl.pc.in acgl.pc @ONLY)
 include(GNUInstallDirs)

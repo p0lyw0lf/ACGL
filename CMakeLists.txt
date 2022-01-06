@@ -25,7 +25,7 @@ set_target_properties(acgl PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(acgl PROPERTIES SOVERSION 0)
 set_target_properties(acgl PROPERTIES PUBLIC_HEADER "include/acgl.h")
 
-target_include_directories(acgl PRIVATE include/acgl)
+target_include_directories(acgl PRIVATE "include/acgl")
 target_link_libraries(acgl PRIVATE SDL2::SDL2main SDL2::SDL2)
 
 configure_file(acgl.pc.in acgl.pc @ONLY)

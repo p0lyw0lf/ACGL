@@ -1,10 +1,47 @@
 # No build files
 acgl.pc
 libacgl*
-Makefile
 install_manifest.txt
 
 # No CMake build files
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
+
+# Ignore YouCompleteMe files
+.clangd/
+compile_commands.json
+
+# Ignore buildsystem files
+# Make
+Makefile
+# Ninja
+build.ninja
+.ninja_*
+# Visual Studio
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+.vs/
+Release/
+Debug/
+x64/
+x86/
+acgl.dir/
+
+# Ignore final executable
+*.exe
+*.pdb
+*.dll
+
+# Ignore intermediate executables
+# Windows
+*.obj
+*.lib
+# Linux
+*.o
+*.a
+
+# Ignore other editor files
+*.swp

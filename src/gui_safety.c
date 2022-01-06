@@ -11,9 +11,14 @@ bool __ACGL_is_gui_t(ACGL_gui_t* gui) {
         return false;
     }
 
-    if (gui->renderer == NULL) {
-        fprintf(stderr, "Error! NULL ACGL_gui_t->renderer\n");
+    if (gui->window == NULL) {
+        fprintf(stderr, "Error! NULL ACGL_gui_t->window\n");
         return false;
+    }
+
+    if (gui->context == NULL) {
+      fprintf(stderr, "Error! NULL ACGL_gui_t->context\n");
+      return false;
     }
 
     return true;
@@ -118,18 +123,8 @@ bool __ACGL_is_gui_object_t(ACGL_gui_object_t* object) {
         return false;
     }
 
-    if (object->renderer == NULL) {
-        fprintf(stderr, "Error! NULL ACGL_gui_object_t->renderer\n");
-        return false;
-    }
-
     if (object->mutex == NULL) {
         fprintf(stderr, "Error! NULL ACGL_gui_object_t->mutex\n");
-        return false;
-    }
-    
-    if (object->renderer == NULL) {
-        fprintf(stderr, "Error! NULL ACGL_gui_object_t->renderer\n");
         return false;
     }
     

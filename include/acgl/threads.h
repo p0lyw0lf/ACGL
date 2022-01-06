@@ -42,8 +42,8 @@ extern ACGL_thread_t* ACGL_thread_create(
   void* extra_data,
   ACGL_destroy_callback_t extra_data_destroy
 );
-// Starts running a thread if it isn't running already. Returns false when thread could not be started
-extern bool ACGL_thread_start(ACGL_thread_t* target, const char* thread_name);
+// Starts running a thread if it isn't running already. Returns nonzero when thread could not be started
+extern int ACGL_thread_start(ACGL_thread_t* target, const char* thread_name);
 // Stops a running thread. Returns same as return code of thread
 extern int ACGL_thread_stop(ACGL_thread_t* target);
 // Destroys a thread object, freeing all memory associated with it

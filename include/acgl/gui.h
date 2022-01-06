@@ -37,10 +37,9 @@ static const ACGL_gui_pos_t ACGL_GUI_DIM_NONE = -1;
 static const ACGL_gui_pos_t ACGL_GUI_DIM_FILL = -2;
 
 typedef struct ACGL_gui_object ACGL_gui_object_t;
-typedef bool (*ACGL_render_callback_t)(SDL_Renderer*, SDL_Rect, void*);
+typedef bool (*ACGL_render_callback_t)(SDL_Window*, SDL_Rect, void*);
 
 struct ACGL_gui_object {
-  SDL_Renderer* renderer;
   SDL_mutex* mutex;
   ACGL_render_callback_t render_callback; // is called before any of the childrens'
   ACGL_destroy_callback_t destroy_callback; // is called when node is being destroyed to free callback data
@@ -71,7 +70,8 @@ struct ACGL_gui_object {
 
 typedef struct ACGL_gui ACGL_gui_t;
 struct ACGL_gui {
-  SDL_Renderer* renderer;
+  SDL_Window* window;
+  SDL_GLContext context;
   ACGL_gui_object_t* root;
 };
 
@@ -79,11 +79,13 @@ struct ACGL_gui {
 // Serves as an entrypoint to the render tree. Traverses if DFS-style.
 // The tree expects the background elements to be at the front of the linkedlist
 extern bool ACGL_gui_render(ACGL_gui_t* ACGL_gui); // returns: did render
-extern ACGL_gui_t* ACGL_gui_init(SDL_Renderer* renderer); // creates a new ACGL_gui_t
+// creates a new ACGL_gui_t attached to a window
+// REQUIRES: the window was created with the flag SDL_WINDOW_OPENGL
+extern ACGL_gui_t* ACGL_gui_init(SDL_Window* window); // returns: a valid object on success, NULL on failure
 extern void ACGL_gui_destroy(ACGL_gui_t* ACGL_gui); // destroys the ACGL_gui_t and the entire subtree
 
-extern ACGL_gui_object_t* ACGL_gui_node_init(SDL_Renderer* renderer, ACGL_render_callback_t render, ACGL_destroy_callback_t destroy, void* data);
-extern bool ACGL_gui_node_render(ACGL_gui_object_t* node, SDL_Rect location); // returns: did render
+extern ACGL_gui_object_t* ACGL_gui_node_init(ACGL_gui_t* gui, ACGL_render_callback_t render, ACGL_destroy_callback_t destroy, void* data);
+extern bool ACGL_gui_node_render(ACGL_gui_t* gui, ACGL_gui_object_t* node, SDL_Rect location); // returns: did render
 extern void ACGL_gui_node_add_child_front(ACGL_gui_object_t* parent, ACGL_gui_object_t* child);
 extern void ACGL_gui_node_add_child_back(ACGL_gui_object_t* parent, ACGL_gui_object_t* child);
 extern void ACGL_gui_node_remove_child(ACGL_gui_object_t* parent, ACGL_gui_object_t* child);

@@ -67,23 +67,23 @@ ACGL_thread_t* ACGL_thread_create(ACGL_tick_callback_t setupfn, ACGL_tick_callba
   return thread;
 }
 
-bool ACGL_thread_start(ACGL_thread_t* target, const char* thread_name) {
+int ACGL_thread_start(ACGL_thread_t* target, const char* thread_name) {
   REQUIRES(__agcl_is_thread(target));
 
   if (target == NULL) {
     fprintf(stderr, "Error: Attempted to start NULL thread!\n");
-    return false;
+    return -1;
   }
 
   if (SDL_LockMutex(target->data->mutex) != 0) {
     fprintf(stderr, "Error locking mutex in ACGL_thread_start. SDL_Error: %s", SDL_GetError());
-    return false;
+    return -1;
   }
 
   if (target->data->running) {
     fprintf(stderr, "Error: Attempted to start already-running thread!\n");
     SDL_UnlockMutex(target->data->mutex);
-    return false;
+    return -1;
   }
 
   target->data->running = true;
@@ -96,7 +96,7 @@ bool ACGL_thread_start(ACGL_thread_t* target, const char* thread_name) {
   SDL_UnlockMutex(target->data->mutex);
 
   ENSURES(__agcl_is_thread(target));
-  return true;
+  return 0;
 }
 
 int ACGL_thread_stop(ACGL_thread_t* target) {

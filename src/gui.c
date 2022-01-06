@@ -31,25 +31,33 @@ bool ACGL_gui_render(ACGL_gui_t* gui) {
   // Initialize memory just in case
   w = 0;
   h = 0;
-  SDL_GetRendererOutputSize(gui->renderer, &w, &h);
+  SDL_GL_GetDrawableSize(gui->window, &w, &h);
   SDL_Rect location = {0, 0, w, h};
 
-  bool output = ACGL_gui_node_render(gui->root, location);
+  bool output = ACGL_gui_node_render(gui, gui->root, location);
   ENSURES(__ACGL_is_gui_t(gui));
   return output;
 }
 
-ACGL_gui_t* ACGL_gui_init(SDL_Renderer* renderer) {
-  assert(renderer != NULL);
+ACGL_gui_t* ACGL_gui_init(SDL_Window* window) {
+  assert(window != NULL);
 
   ACGL_gui_t* gui = (ACGL_gui_t*)malloc(sizeof(ACGL_gui_t));
   if (gui == NULL) {
     fprintf(stderr, "Error! Could not malloc gui in ACGL_gui_init\n");
     return NULL;
   }
-  gui->renderer = renderer;
-  gui->root = ACGL_gui_node_init(renderer, NULL, NULL, NULL);
+  gui->window = window;
 
+  SDL_GLContext context = SDL_GL_CreateContext(window);
+  if (context == NULL) {
+    fprintf(stderr, "Error initializing GL context: %s\n", SDL_GetError());
+    free(gui);
+    return NULL;
+  }
+  gui->context = context;
+
+  gui->root = ACGL_gui_node_init(context, NULL, NULL, NULL);
   if (gui->root == NULL) {
     fprintf(stderr, "Error! could not create gui root node in ACGL_gui_init\n");
     free(gui);
@@ -66,18 +74,18 @@ void ACGL_gui_destroy(ACGL_gui_t* gui) {
   ACGL_gui_node_destroy(gui->root);
   gui->root = NULL;
 
-  // don't destroy renderer, save it for main code to handle
-  // example: we could just we switching away from ACGL
-  gui->renderer = NULL;
+  // don't destroy window, could just be switching away from ACGL
+  gui->window = NULL;
+
+  // Destroy the associated OpenGL context, though
+  SDL_GL_DeleteContext(gui->context);
+  gui->context = NULL;
 
   free(gui);
 }
 
-ACGL_gui_object_t* ACGL_gui_node_init(SDL_Renderer* renderer, ACGL_render_callback_t render, ACGL_destroy_callback_t destroy, void* data) {
-  if (renderer == NULL) {
-    fprintf(stderr, "Error! NULL renderer passed to ACGL_gui_node_init\n");
-    return NULL;
-  }
+ACGL_gui_object_t* ACGL_gui_node_init(ACGL_gui_t* gui, ACGL_render_callback_t render, ACGL_destroy_callback_t destroy, void* data) {
+  REQUIRES(__ACGL_is_gui_t(gui));
 
   ACGL_gui_object_t* node = (ACGL_gui_object_t*)malloc(sizeof(ACGL_gui_object_t));
   if (node == NULL) {
@@ -85,7 +93,6 @@ ACGL_gui_object_t* ACGL_gui_node_init(SDL_Renderer* renderer, ACGL_render_callba
     return NULL;
   }
 
-  node->renderer = renderer;
   node->mutex = SDL_CreateMutex();
   if (node->mutex == NULL) {
     fprintf(stderr, "Could not create mutex in ACGL_gui_node_init! SDL Error: %s\n", SDL_GetError());
@@ -125,7 +132,8 @@ ACGL_gui_object_t* ACGL_gui_node_init(SDL_Renderer* renderer, ACGL_render_callba
   return node;
 }
 
-bool ACGL_gui_node_render(ACGL_gui_object_t* node, SDL_Rect location) {
+bool ACGL_gui_node_render(ACGL_gui_t* gui, ACGL_gui_object_t* node, SDL_Rect location) {
+  REQUIRES(__ACGL_is_gui_t(gui));
   REQUIRES(__ACGL_is_gui_object_t(node));
   
   if (SDL_LockMutex(node->mutex) != 0) {
@@ -306,7 +314,7 @@ __ACGL_gui_node_render_set_constant_size:
   }
 
   if (node->needs_update && node->render_callback != NULL) {
-    return_val |= (*node->render_callback)(node->renderer, sublocation, node->callback_data);
+    return_val |= (*node->render_callback)(gui->window, sublocation, node->callback_data);
   }
 
   ACGL_gui_object_t* child = node->last_child;
@@ -314,7 +322,7 @@ __ACGL_gui_node_render_set_constant_size:
     if (node->needs_update) {
       child->needs_update = true;
     }
-    return_val |= ACGL_gui_node_render(child, sublocation);
+    return_val |= ACGL_gui_node_render(gui, child, sublocation);
     child = child->prev_sibling;
   }
 
@@ -322,6 +330,7 @@ __ACGL_gui_node_render_set_constant_size:
   SDL_UnlockMutex(node->mutex);
 
   ENSURES(__ACGL_is_gui_object_t(node));
+  ENSURES(__ACGL_is_gui_t(gui));
   return return_val;
 }
 

@@ -2,14 +2,18 @@
 #include "gui_safety.h"
 #include "contracts.h"
 
+#ifndef min
 #define min(a,b) \
    ({ __typeof__ (a) _a = (a); \
        __typeof__ (b) _b = (b); \
      _a < _b ? _a : _b; })
+#endif
+#ifndef max
 #define max(a,b) \
    ({ __typeof__ (a) _a = (a); \
        __typeof__ (b) _b = (b); \
      _a > _b ? _a : _b; })
+#endif
 bool ACGL_gui_force_update(ACGL_gui_t* gui) {
     REQUIRES(__ACGL_is_gui_t(gui));
    

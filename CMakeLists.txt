@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.11)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2")
 
 set(ACGL_BUILD_STATIC YES)
 
@@ -12,7 +11,7 @@ if (DEFINED ACGL_BUILD_STATIC)
 endif ()
 
 project(acgl VERSION 0.1.1 DESCRIPTION "Another Custom GUI Library")
-find_package(SDL2 REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
 
 set(SOURCE_FILES
     "src/gui.c"
@@ -39,7 +38,7 @@ set_target_properties(acgl PROPERTIES SOVERSION 0)
 set_target_properties(acgl PROPERTIES PUBLIC_HEADER "include/acgl.h")
 
 target_include_directories(acgl PRIVATE include/acgl)
-target_link_libraries(acgl SDL2::Main)
+target_link_libraries(acgl PRIVATE SDL2::SDL2main SDL2::SDL2-static)
 
 configure_file(acgl.pc.in acgl.pc @ONLY)
 include(GNUInstallDirs)

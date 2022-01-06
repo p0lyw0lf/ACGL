@@ -37,6 +37,7 @@ static const ACGL_gui_pos_t ACGL_GUI_DIM_FILL = -2;
 
 typedef struct ACGL_gui_object_t ACGL_gui_object_t;
 typedef bool (*ACGL_gui_callback_t)(SDL_Renderer*, SDL_Rect, void*);
+typedef void (*ACGL_gui_destroy_callback_t)(void*);
 
 struct ACGL_gui_object_t {
   SDL_Renderer* renderer;
@@ -78,6 +79,7 @@ extern bool ACGL_gui_render(ACGL_gui_t* ACGL_gui); // returns: did render
 extern ACGL_gui_t* ACGL_gui_init(SDL_Renderer* renderer); // creates a new ACGL_gui_t
 extern void ACGL_gui_destroy(ACGL_gui_t* ACGL_gui); // destroys the ACGL_gui_t and the entire subtree
 
+// TODO: add data free callback to this init method + the node struct
 extern ACGL_gui_object_t* ACGL_gui_node_init(SDL_Renderer* renderer, ACGL_gui_callback_t callback, void* data);
 extern bool ACGL_gui_node_render(ACGL_gui_object_t* node, SDL_Rect location); // returns: did render
 extern void ACGL_gui_node_add_child_front(ACGL_gui_object_t* parent, ACGL_gui_object_t* child);

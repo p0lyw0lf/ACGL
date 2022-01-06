@@ -49,15 +49,8 @@ ACGL_gui_t* ACGL_gui_init(SDL_Window* window) {
   }
   gui->window = window;
 
-  SDL_GLContext context = SDL_GL_CreateContext(window);
-  if (context == NULL) {
-    fprintf(stderr, "Error initializing GL context: %s\n", SDL_GetError());
-    free(gui);
-    return NULL;
-  }
-  gui->context = context;
-
-  gui->root = ACGL_gui_node_init(context, NULL, NULL, NULL);
+  gui->root = NULL;
+  gui->root = ACGL_gui_node_init(gui, NULL, NULL, NULL);
   if (gui->root == NULL) {
     fprintf(stderr, "Error! could not create gui root node in ACGL_gui_init\n");
     free(gui);
@@ -71,15 +64,13 @@ ACGL_gui_t* ACGL_gui_init(SDL_Window* window) {
 void ACGL_gui_destroy(ACGL_gui_t* gui) {
   REQUIRES(__ACGL_is_gui_t(gui));
 
-  ACGL_gui_node_destroy(gui->root);
+  if (gui->root != NULL) {
+    ACGL_gui_node_destroy(gui->root);
+  }
   gui->root = NULL;
 
   // don't destroy window, could just be switching away from ACGL
   gui->window = NULL;
-
-  // Destroy the associated OpenGL context, though
-  SDL_GL_DeleteContext(gui->context);
-  gui->context = NULL;
 
   free(gui);
 }

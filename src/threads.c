@@ -6,12 +6,15 @@ Uint32 ACGL_THREAD_DELAY_CUTOFF = 5;
 // Safety functions
 bool __acgl_is_thread_data(ACGL_thread_data_t* data) {
   if (data == NULL) {
+    fprintf(stderr, "Error, internal thread data is NULL!\n");
     return false;
   }
   if (data->mutex == NULL) {
+    fprintf(stderr, "Error, thread data has no mutex!\n");
     return false;
   }
   if (data->min_tick < ACGL_THREAD_DELAY_CUTOFF) {
+    fprintf(stderr, "Error, thread data wants to loop faster than we can handle!\n");
     return false;
   }
   return true;
@@ -22,17 +25,17 @@ bool __acgl_is_thread(ACGL_thread_t* target) {
     return false;
   }
   if (target->data == NULL) {
-    return false;
-  }
-  if (target->extra_data_destroy == NULL && target->data->extra_data != NULL) {
+    fprintf(stderr, "Error, thread has no data!\n");
     return false;
   }
   if (target->data->running && target->thread == NULL) {
+    fprintf(stderr, "Error, thread set to running, but no associated thread handle!\n");
     return false;
   }
-  if (!target->data->running && target->thread != NULL) {
+  /* if (!target->data->running && target->thread != NULL) {
+    fprintf(stderr, "Error, thread handle acquired but not running!\n");
     return false;
-  }
+  } */
 
   return __acgl_is_thread_data(target->data);
 }
@@ -68,7 +71,7 @@ ACGL_thread_t* ACGL_thread_create(ACGL_tick_callback_t setupfn, ACGL_tick_callba
 }
 
 int ACGL_thread_start(ACGL_thread_t* target, const char* thread_name) {
-  REQUIRES(__agcl_is_thread(target));
+  REQUIRES(__acgl_is_thread(target));
 
   if (target == NULL) {
     fprintf(stderr, "Error: Attempted to start NULL thread!\n");
@@ -86,16 +89,16 @@ int ACGL_thread_start(ACGL_thread_t* target, const char* thread_name) {
     return -1;
   }
 
-  target->data->running = true;
   target->thread = SDL_CreateThread(
     &ACGL_thread_mainloop,
     thread_name,
     target
   );
+  target->data->running = true;
 
   SDL_UnlockMutex(target->data->mutex);
 
-  ENSURES(__agcl_is_thread(target));
+  ENSURES(__acgl_is_thread(target));
   return 0;
 }
 
@@ -107,10 +110,12 @@ int ACGL_thread_stop(ACGL_thread_t* target) {
     return false;
   }
 
-  if (SDL_LockMutex(target->data->mutex) != 0) {
+  // No need to use mutexes; single write is always atomic
+  /* if (SDL_LockMutex(target->data->mutex) != 0) {
     fprintf(stderr, "Error locking mutex in ACGL_thread_stop. SDL_Error: %s", SDL_GetError());
     return false;
-  }
+  } */
+
 
   if (!target->data->running) {
     fprintf(stderr, "Error: thread to stop already-stopped thread in ACGL_thread_stop\n");
@@ -119,7 +124,7 @@ int ACGL_thread_stop(ACGL_thread_t* target) {
   }
 
   target->data->running = false;
-  SDL_UnlockMutex(target->data->mutex);
+  /* SDL_UnlockMutex(target->data->mutex); */
 
   int result;
   SDL_WaitThread(target->thread, &result);
@@ -158,6 +163,9 @@ int ACGL_thread_mainloop(void* data) {
   // well-seeded numbers by default
   srand((unsigned)time(NULL));
 
+  // We wouldn't need mutexes if just the target->data->running was read,
+  // but because the target->data->extra data can be modified, we take
+  // extra precautions
   bool unlocked_running = true;
   if (target->setupfn != NULL) {
     if (SDL_LockMutex(target->data->mutex) != 0) {

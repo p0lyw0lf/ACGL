@@ -3,7 +3,7 @@
 
 #include <assert.h>
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
 
 #define REQUIRES(x) assert(x)
 #define ENSURES(x)  assert(x)

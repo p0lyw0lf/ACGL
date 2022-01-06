@@ -52,4 +52,8 @@ extern void ACGL_thread_destroy(ACGL_thread_t* target);
 // Returns 0 if tick function stops on its own
 extern int ACGL_thread_mainloop(void* target);
 
+// Safety functions
+extern bool __acgl_is_thread_data(ACGL_thread_data_t* data);
+extern bool __acgl_is_thread(ACGL_thread_t* target);
+
 #endif // ACGL_THREADS_H

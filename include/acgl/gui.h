@@ -71,7 +71,6 @@ struct ACGL_gui_object {
 typedef struct ACGL_gui ACGL_gui_t;
 struct ACGL_gui {
   SDL_Window* window;
-  SDL_GLContext context;
   ACGL_gui_object_t* root;
 };
 

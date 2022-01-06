@@ -50,6 +50,6 @@ extern int ACGL_thread_stop(ACGL_thread_t* target);
 extern void ACGL_thread_destroy(ACGL_thread_t* target);
 // Function that actually runs the loop
 // Returns 0 if tick function stops on its own
-extern int ACGL_thread_mainloop(ACGL_thread_t* target);
+extern int ACGL_thread_mainloop(void* target);
 
 #endif // ACGL_THREADS_H

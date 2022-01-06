@@ -149,7 +149,8 @@ void ACGL_thread_destroy(ACGL_thread_t* target) {
   }
 }
 
-int ACGL_thread_mainloop(ACGL_thread_t* target) {
+int ACGL_thread_mainloop(void* data) {
+  ACGL_thread_t* target = (ACGL_thread_t*)data;
   REQUIRES(__acgl_is_thread(target));
   // Each thread needs to re-seed independently
   // for whatever reason

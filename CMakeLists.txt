@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
 project(acgl VERSION 0.1.1 DESCRIPTION "Another Custom GUI Library")
-find_package(SDL2 CONFIG REQUIRED)
 
 set(SOURCE_FILES
     "src/gui.c"
@@ -17,16 +16,12 @@ set(HEADER_FILES
   "include/acgl/threads.h"
 )
 
-add_library(acgl STATIC
-    ${HEADER_FILES} ${SOURCE_FILES}
-)
+add_library(acgl STATIC ${HEADER_FILES} ${SOURCE_FILES})
 
 set_target_properties(acgl PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(acgl PROPERTIES SOVERSION 0)
 set_target_properties(acgl PROPERTIES PUBLIC_HEADER "include/acgl.h")
-
 target_include_directories(acgl PRIVATE "include/acgl")
-target_link_libraries(acgl PRIVATE SDL2::SDL2main SDL2::SDL2)
 
 configure_file(acgl.pc.in acgl.pc @ONLY)
 include(GNUInstallDirs)
@@ -40,3 +35,9 @@ install(FILES ${CMAKE_BINARY_DIR}/acgl.pc
 install(DIRECTORY include/
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
+
+# Look for SDL2 if not already found
+if (NOT SDL2_FOUND)
+  find_package(SDL2 CONFIG REQUIRED)
+endif()
+target_link_libraries(acgl PRIVATE SDL2::SDL2)
